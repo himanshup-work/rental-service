@@ -1,0 +1,15 @@
+spring:
+  port: 8081
+
+  dataSource:
+    url: jdbc:postgresql://localhost:5432/rentalappservice
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+    jpa:
+      hibernate.ddl-auto: none
+      generate-ddl: true
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
