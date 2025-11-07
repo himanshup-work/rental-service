@@ -2,7 +2,11 @@ package com.auth_service.services;
 
 import com.auth_service.dto.ApiResponse;
 import com.auth_service.dto.AuthRequest;
+import com.auth_service.dto.RegisterRequest;
+import com.auth_service.entities.Role;
 import com.auth_service.entities.User;
+import com.auth_service.repositories.RoleRepository;
+import com.auth_service.repositories.UserRepository;
 import com.auth_service.utils.JwtUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -10,14 +14,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder encoder;
 
     public ApiResponse login(
             @NonNull AuthRequest request) {
@@ -31,6 +44,33 @@ public class AuthService {
                 .message("User logged in successfully.")
                 .data(token)
                 .statusCode(HttpStatus.OK)
+                .build();
+    }
+
+    public ApiResponse register(
+            @NonNull RegisterRequest request) {
+        boolean isExists = this.userRepository.existsByEmail(request.getEmail());
+        if (isExists){
+            return ApiResponse.builder()
+                    .message("User already exists with this email: " + request.getEmail())
+                    .statusCode(HttpStatus.OK)
+                    .build();
+        }
+        Role role = this.roleRepository.findByName("TENANT").orElseThrow();
+        Set<Role> roles = new HashSet<>();
+        roles.add(role);
+        User user = User.builder()
+                .id(UUID.randomUUID().toString())
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(encoder.encode(request.getPassword()))
+                .roles(roles)
+                .build();
+        User createdUser = this.userRepository.save(user);
+        return ApiResponse.builder()
+                .message("User registered successfully")
+                .data(createdUser)
+                .statusCode(HttpStatus.CREATED)
                 .build();
     }
 }
