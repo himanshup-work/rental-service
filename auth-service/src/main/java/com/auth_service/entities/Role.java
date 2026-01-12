@@ -1,21 +1,17 @@
 package com.auth_service.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 
 /**
- * Entity representing a user role (e.g., ADMIN, TENANT, OWNER).
+ * Enum representing user roles in the system.
  */
-@Data
-@Entity
-@NoArgsConstructor
-public class Role {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
+public enum Role implements GrantedAuthority {
+    TENANT,
+    OWNER,
+    ADMIN;
+
+    @Override
+    public String getAuthority() {
+        return name();
+    }
 }
