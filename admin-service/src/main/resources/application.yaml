@@ -1,0 +1,28 @@
+jwt:
+  secret: renalapplicationwithmicroservicesextendedforsecurekeylength
+spring:
+  application:
+    name: admin-service
+
+  dataSource:
+    url: jdbc:postgresql://localhost:5432/rentalappservice
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+    jpa:
+      hibernate.ddl-auto: update
+      generate-ddl: true
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+server:
+  port: 8082
+
+# Eureka Client Configuration
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
+#  instance:
+#      prefer-ip-address: true
