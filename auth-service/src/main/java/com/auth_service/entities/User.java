@@ -10,6 +10,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Entity representing a user in the system, implementing UserDetails for Spring Security.
+ */
 @Data
 @Entity
 @Builder
@@ -25,6 +28,13 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return roles.stream()
+                .map(role -> (GrantedAuthority) role::getName)
+                .toList();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
     }
 }

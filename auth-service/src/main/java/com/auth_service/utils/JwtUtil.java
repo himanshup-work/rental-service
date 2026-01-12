@@ -4,6 +4,7 @@ import com.auth_service.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -13,15 +14,27 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Utility class for JWT token generation, extraction, and validation.
+ */
 @Component
 public class JwtUtil {
-    private static final String SECRET_KEY = "rentalapplicationwithmicroservices";
-    private static final long JWT_TOKEN_VALIDITY = 10 * 60 * 1000; // 10 minutes
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+    @Value("${jwt.expiration}")
+    private long jwtTokenValidity;
 
     private SecretKey getSecretKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_16));
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Generates a JWT token for the given user.
+     *
+     * @param user the user for whom the token is generated
+     * @return the generated JWT token
+     */
     public String generateToken(User user){
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
@@ -29,7 +42,7 @@ public class JwtUtil {
                 .subject(user.getEmail())
                 .claims(claims)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
+                .expiration(new Date(System.currentTimeMillis() + jwtTokenValidity))
                 .signWith(getSecretKey())
                 .compact();
     }
@@ -37,7 +50,7 @@ public class JwtUtil {
     // Validate the token with user details
     public Boolean validateToken(String token, User user) {
         String username = extractUsername(token);
-        return username.equals(user.getUsername()) && !isTokenExpired(token);
+        return username.equals(user.getEmail()) && !isTokenExpired(token);
     }
 
     // Extract username from JWT token
@@ -45,7 +58,12 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // Extract user ID from JWT token
+    /**
+     * Extracts the user ID from the given JWT token.
+     *
+     * @param token the JWT token
+     * @return the extracted user ID
+     */
     public String extractUserId(String token) {
         return extractClaim(token, claims -> claims.get("userId", String.class));
     }

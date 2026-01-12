@@ -29,7 +29,4 @@ public class GlobalExceptionHandler {
                 .build();
         return new ResponseEntity<>(apiResponse, apiResponse.getStatusCode());
     }
-
-
-
 }

@@ -1,3 +1,7 @@
+jwt:
+  secret: renalapplicationwithmicroservicesextendedforsecurekeylength
+  expiration: 600000 # 10 minutes in milliseconds
+
 spring:
   port: 8081
 

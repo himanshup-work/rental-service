@@ -19,12 +19,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Configuration class for Spring Security, defining filters, roles, and endpoint protections.
+ */
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
     public static final String[] PUBLIC_URLS = {
-            "/auth/**",
-            "/quiz/**"
+            "/auth/**"
     };
 
     private final JwtAuthenticationFilter authenticationFilter;
@@ -69,7 +71,7 @@ public class SecurityConfig {
                                     objectMapper.writeValueAsString(
                                             ApiResponse.builder()
                                                     .message("Access denied")
-                                                    .statusCode(HttpStatus.UNAUTHORIZED)
+                                                    .statusCode(HttpStatus.FORBIDDEN)
                                                     .build()
                                     )
                             );

@@ -22,6 +22,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Service class for handling authentication logic, including user login and registration.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -32,6 +35,12 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder encoder;
 
+    /**
+     * Authenticates a user and generates a JWT token upon successful authentication.
+     *
+     * @param request the authentication request
+     * @return ApiResponse containing the JWT token
+     */
     public ApiResponse login(
             @NonNull AuthRequest request) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
@@ -47,16 +56,23 @@ public class AuthService {
                 .build();
     }
 
+    /**
+     * Registers a new user with the default 'TENANT' role.
+     *
+     * @param request the registration request
+     * @return ApiResponse containing the registered user details
+     */
     public ApiResponse register(
             @NonNull RegisterRequest request) {
         boolean isExists = this.userRepository.existsByEmail(request.getEmail());
-        if (isExists){
+        if (isExists) {
             return ApiResponse.builder()
                     .message("User already exists with this email: " + request.getEmail())
-                    .statusCode(HttpStatus.OK)
+                    .statusCode(HttpStatus.CONFLICT)
                     .build();
         }
-        Role role = this.roleRepository.findByName("TENANT").orElseThrow();
+        Role role = this.roleRepository.findByName("TENANT")
+                .orElseThrow(() -> new RuntimeException("Default role 'TENANT' not found. Please contact administrator."));
         Set<Role> roles = new HashSet<>();
         roles.add(role);
         User user = User.builder()

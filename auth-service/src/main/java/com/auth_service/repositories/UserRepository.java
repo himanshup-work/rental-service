@@ -12,5 +12,4 @@ public interface UserRepository
 
     Optional<User> findByEmail(String username);
     boolean existsByEmail(String email);
-    // TODO
 }
