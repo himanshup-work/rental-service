@@ -21,12 +21,17 @@ import java.time.Instant;
  * Service class for handling admin-related business logic.
  */
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @Slf4j
 public class AdminService {
 
     private final AuthServiceClient authClient;
     private final OwnerRequestRepository ownerRequestRepository;
+
+    public AdminService(AuthServiceClient authClient, OwnerRequestRepository ownerRequestRepository) {
+        this.authClient = authClient;
+        this.ownerRequestRepository = ownerRequestRepository;
+    }
 
     /**
      * Retrieves all users from the auth service.
