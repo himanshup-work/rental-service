@@ -1,6 +1,7 @@
 package com.auth_service.config;
 
 import com.auth_service.dto.ApiResponse;
+import com.auth_service.entities.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -54,9 +55,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_URLS).permitAll()
-                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/owner/**").hasAnyAuthority("ADMIN", "OWNER")
-                        .requestMatchers("/tenant/**").hasAnyAuthority("ADMIN", "OWNER", "TENANT")
+                        .requestMatchers("/admin/**").hasAuthority(Role.ADMIN.name())
+                        .requestMatchers("/owner/**").hasAnyAuthority(Role.ADMIN.name(), Role.OWNER.name())
+                        .requestMatchers("/tenant/**").hasAnyAuthority(Role.ADMIN.name(), Role.OWNER.name(), Role.TENANT.name())
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

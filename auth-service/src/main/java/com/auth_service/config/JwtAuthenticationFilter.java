@@ -2,7 +2,7 @@ package com.auth_service.config;
 
 import com.auth_service.entities.User;
 import com.auth_service.repositories.UserRepository;
-import com.auth_service.utils.JwtUtil;
+import com.auth_service.utils.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,16 +22,16 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 public class JwtAuthenticationFilter
         extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
     private final UserRepository userRepository;
     private final HandlerExceptionResolver resolver;
 
     public JwtAuthenticationFilter(
-            JwtUtil jwtUtil,
+            JwtService jwtService,
             UserRepository userRepository,
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver
     ) {
-        this.jwtUtil = jwtUtil;
+        this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.resolver = resolver;
     }
@@ -51,7 +51,7 @@ public class JwtAuthenticationFilter
                 return;
             }
             token = extractToken(authHeader);
-            email = jwtUtil.extractUsername(token);
+            email = jwtService.extractUsername(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 User user = userRepository.findByEmail(email).orElseThrow();

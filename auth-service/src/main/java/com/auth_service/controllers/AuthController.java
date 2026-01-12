@@ -1,15 +1,14 @@
 package com.auth_service.controllers;
 
-import com.auth_service.dto.ApiResponse;
-import com.auth_service.dto.AuthRequest;
-import com.auth_service.dto.RegisterRequest;
+import com.auth_service.dto.*;
+import com.auth_service.entities.RefreshToken;
 import com.auth_service.services.AuthService;
+import com.auth_service.services.RefreshTokenService;
+import com.auth_service.utils.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Controller for handling authentication-related requests, such as login and registration.
@@ -20,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
+    private final JwtService jwtService;
 
     /**
      * Authenticates a user and returns a JWT token.
@@ -44,4 +45,25 @@ public class AuthController {
         ApiResponse apiResponse = authService.register(request);
         return new ResponseEntity<>(apiResponse, apiResponse.getStatusCode());
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse> refresh(@RequestParam String refreshToken) {
+        RefreshToken rt = refreshTokenService.verify(refreshToken);
+        String token = jwtService.generateToken(rt.getUser());
+
+        TokenResponse tokenResponse = new TokenResponse();
+        tokenResponse.setAccessToken(token);
+        tokenResponse.setRefreshToken(refreshToken);
+        tokenResponse.setExpiresIn(600000);
+        tokenResponse.setRole(rt.getUser().getRole().name());
+
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .message("Token refreshed successfully")
+                        .data(tokenResponse)
+                        .statusCode(HttpStatus.OK)
+                        .build()
+        );
+    }
+
 }
