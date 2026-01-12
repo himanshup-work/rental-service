@@ -1,6 +1,7 @@
 package com.auth_service.config;
 
 import com.auth_service.dto.ApiResponse;
+import com.auth_service.entities.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -14,15 +15,19 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Configuration class for Spring Security, defining filters, roles, and endpoint protections.
+ */
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
     public static final String[] PUBLIC_URLS = {
-            "/auth/**",
-            "/quiz/**"
+            "/auth/**"
     };
 
     private final JwtAuthenticationFilter authenticationFilter;
@@ -32,6 +37,11 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             @NonNull AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
@@ -45,9 +55,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_URLS).permitAll()
-                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/owner/**").hasAnyAuthority("ADMIN", "OWNER")
-                        .requestMatchers("/tenant/**").hasAnyAuthority("ADMIN", "OWNER", "TENANT")
+                        .requestMatchers("/admin/**").hasAuthority(Role.ADMIN.name())
+                        .requestMatchers("/owner/**").hasAnyAuthority(Role.ADMIN.name(), Role.OWNER.name())
+                        .requestMatchers("/tenant/**").hasAnyAuthority(Role.ADMIN.name(), Role.OWNER.name(), Role.TENANT.name())
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -62,7 +72,7 @@ public class SecurityConfig {
                                     objectMapper.writeValueAsString(
                                             ApiResponse.builder()
                                                     .message("Access denied")
-                                                    .statusCode(HttpStatus.UNAUTHORIZED)
+                                                    .statusCode(HttpStatus.FORBIDDEN)
                                                     .build()
                                     )
                             );
